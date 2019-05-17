@@ -73,6 +73,7 @@ function displayAxis(svg, data) {
   const xScale = d3.scaleTime(xDomain, xRange);
 
   svg.append('g')
+      .attr('id', 'x-axis')
       .attr('class', 'tick')
       .attr('transform', `translate(${leftPadding}, ${height - bottomPadding})`)
       .call(d3.axisBottom(xScale));
@@ -86,6 +87,7 @@ function displayAxis(svg, data) {
   const yScale = d3.scaleLinear(yDomain, yRange);
 
   svg.append('g')
+      .attr('id', 'y-axis')
       .attr('class', 'tick')
       .attr('transform', `translate(${leftPadding}, 0)`)
       .call(d3.axisLeft(yScale))
