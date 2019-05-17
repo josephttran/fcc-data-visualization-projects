@@ -15,7 +15,7 @@
 
 function displayChart(dataObject) {
   console.log(dataObject);
-
+  
   const containerWidth = 600;
   const containerHeight = 300;
 
@@ -25,6 +25,9 @@ function displayChart(dataObject) {
       
   const title = dataObject.name
   displayTitle(svg, title);
+
+  const data = dataObject.data;
+  displayAxis(svg, data);
 }
 
 function displayTitle(svg, dataTitle) {
@@ -50,4 +53,40 @@ function displayTitle(svg, dataTitle) {
       .attr('text-anchor', 'middle')
       .attr('y', titleBackgroundHeight / 2 + titlePadding / 2)
       .attr('font-size', titleFontSize);
+}
+
+function displayAxis(svg, data) {
+  const viewBox = svg.attr('viewBox');
+  const width = viewBox.split(' ')[2];
+  const height = viewBox.split(' ')[3]
+
+  const topPadding = 20;
+  const bottomPadding = 40;
+  const leftPadding = 50;
+  const rightPadding = 40;
+  
+  // X-axis
+  const xMin = d3.min(data, arr => { return d3.min(arr, d => arr[0]) });
+  const xMax = d3.max(data, arr => { return d3.max(arr, d => arr[0]) });
+  const xDomain = [new Date(xMin), new Date(xMax)];
+  const xRange = [0, width - leftPadding - rightPadding];
+  const xScale = d3.scaleTime(xDomain, xRange);
+
+  svg.append('g')
+      .attr('class', 'tick')
+      .attr('transform', `translate(${leftPadding}, ${height - bottomPadding})`)
+      .call(d3.axisBottom(xScale));
+
+  // Y-axis
+  const titleHeight = parseInt(d3.select('#title-bg').attr('height'));
+  const yMin = d3.min(data, arr => { return d3.min(arr, d => arr[1]) });
+  const yMax = d3.max(data, arr => { return d3.max(arr, d => arr[1]) });
+  const yDomain = [yMin, yMax];
+  const yRange = [height - bottomPadding, titleHeight + topPadding];
+  const yScale = d3.scaleLinear(yDomain, yRange);
+
+  svg.append('g')
+      .attr('class', 'tick')
+      .attr('transform', `translate(${leftPadding}, 0)`)
+      .call(d3.axisLeft(yScale))
 }
