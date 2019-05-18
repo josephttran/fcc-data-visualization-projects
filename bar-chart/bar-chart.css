@@ -11,3 +11,11 @@ html, body {
   margin-top: 10vh;
   background-color: #43dfd7;
 }
+
+.bar {
+  fill: blue;
+}
+
+.bar:hover {
+  fill: lightblue;
+}

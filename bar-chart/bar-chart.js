@@ -39,7 +39,7 @@ function displayChart(dataObject) {
 
   displayTitle(svg, title);
   displayAxis(svg, data, axisPadding);
- 
+  displayBar(svg, data, barWidth, barRightMargin);
 }
 
 function displayTitle(svg, dataTitle) {
@@ -98,4 +98,27 @@ function displayAxis(svg, data, padding) {
       .attr('class', 'tick')
       .attr('transform', `translate(${padding.left}, 0)`)
       .call(d3.axisLeft(yScale))
+}
+
+// Bar
+function displayBar(svg, data, barWidth, barRightMargin) {
+  const regex = /[0-9]+/g
+  const barStartX = parseInt(d3.select('#y-axis').attr('transform').match(regex)[0]);
+  const barStartY = parseInt(d3.select('#x-axis').attr('transform').match(regex)[1]);
+
+  console.log(barStartX, barStartY);
+
+  const barSpace = barWidth + barRightMargin;
+  svg.selectAll('.bar').data(data)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('data-date', (d) => d[0])
+      .attr('data-gdp', (d) => d[1])
+      .attr('x', (d, i) => barStartX + i * barSpace)
+      .attr('y', (d, i) => barStartY - d[1])
+      .attr('width', barWidth)
+      .attr('height', (d, i) => d[1] )
+
+
 }
