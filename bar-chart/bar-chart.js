@@ -15,7 +15,7 @@
 
 function displayChart(dataObject) {
   console.log(dataObject);
-  
+
   const axisPadding = {
     top: 20,
     left: 50,
@@ -29,6 +29,11 @@ function displayChart(dataObject) {
   const titleBackgroundHeight = 50;
   const containerHeight = dataLen + titleBackgroundHeight + axisPadding.top + axisPadding.bottom;
 
+  const tooltip = d3.select('#chart-container')
+      .append('div')
+      .attr('id', 'tooltip')
+      .style('opacity', 0);
+      
   const svg = d3.select('#chart-container')
       .append('svg')
       .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
@@ -39,6 +44,7 @@ function displayChart(dataObject) {
   displayTitle(svg, title, titleBackgroundHeight);
   displayAxis(svg, data, axisPadding);
   displayBar(svg, data, barWidth, barRightMargin, axisPadding);
+  displayToolTip(svg, tooltip);
 }
 
 function displayTitle(svg, dataTitle, titleBackgroundHeight) {
@@ -121,16 +127,10 @@ function displayBar(svg, data, barWidth, barRightMargin, padding) {
       .attr('width', barWidth)
       .attr('height', (d, i) => d[1] / yBarScale);
 
-  displayToolTip(svg);
 }
 
 // Tooltip for bar
-function displayToolTip(svg) {
-  const tooltip = d3.select('body')
-      .append('div')
-      .attr('class', 'tooltip')
-      .style('opacity', 0);
-
+function displayToolTip(svg, tooltip) {
   svg.selectAll('.bar')
       .on('mouseover', d => {
         const yearMonthDay = d[0].split('-');
@@ -152,16 +152,18 @@ function displayToolTip(svg) {
         } 
       
         const toolText = `${year} ${quarter} </br> $${d[1]} Billion`;
+        
         tooltip.html(toolText)
-            .transition()
-            .duration(100)
+            .attr('data-date', d[0])
             .style('opacity', 0.8)
             .style('top', d3.event.pageY - 80 + 'px')
             .style('left', d3.event.pageX - 100 +'px')
+            .transition()
+            .duration(500)
       })
       .on('mouseout', d => {
-        tooltip.transition()
-            .duration(200)
-            .style('opacity', 0)
+        tooltip.style('opacity', 0)
+            .transition()
+            .duration(100)
       });
 }

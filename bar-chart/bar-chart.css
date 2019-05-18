@@ -20,7 +20,7 @@ html, body {
   fill: lightblue;
 }
 
-div.tooltip {
+div#tooltip {
   position: absolute;
   background: #fff;
   color: #000;
@@ -34,7 +34,7 @@ div.tooltip {
   pointer-events: none;
 }
 
-div.tooltip::after {
+div#tooltip::after {
   position: absolute;
   content: " ";
   top: 100%;
