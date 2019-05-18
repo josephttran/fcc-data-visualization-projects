@@ -120,5 +120,29 @@ function displayBar(svg, data, barWidth, barRightMargin) {
       .attr('width', barWidth)
       .attr('height', (d, i) => d[1] )
 
+  displayToolTip(svg);
+}
 
+// Tooltip for bar
+function displayToolTip(svg) {
+  
+  const tooltip = d3.select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0);
+
+  svg.selectAll('.bar')
+  .on('mouseover', d => {
+    tooltip.html(`${d[0]} </br> $${d[1]} Billion`)
+        .transition()
+        .duration(100)
+        .style('opacity', 0.8)
+        .style('top', d3.event.pageY + 'px')
+        .style('left', d3.event.pageX + 40 + 'px')
+  })
+  .on('mouseout', d => {
+    tooltip.transition()
+        .duration(200)
+        .style('opacity', 0)
+  });
 }
