@@ -91,7 +91,7 @@ function displayAxis(svg, data, padding) {
   const titleHeight = parseInt(d3.select('#title-bg').attr('height'));
   const yMin = d3.min(data, arr => { return d3.min(arr, d => arr[1]) });
   const yMax = d3.max(data, arr => { return d3.max(arr, d => arr[1]) });
-  const yDomain = [yMin, yMax];
+  const yDomain = [0, yMax];
   const yRange = [height - padding.bottom, titleHeight + padding.top];
   const yScale = d3.scaleLinear(yDomain, yRange);
 
