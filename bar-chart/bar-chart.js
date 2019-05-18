@@ -125,24 +125,42 @@ function displayBar(svg, data, barWidth, barRightMargin) {
 
 // Tooltip for bar
 function displayToolTip(svg) {
-  
   const tooltip = d3.select('body')
       .append('div')
       .attr('class', 'tooltip')
       .style('opacity', 0);
 
   svg.selectAll('.bar')
-  .on('mouseover', d => {
-    tooltip.html(`${d[0]} </br> $${d[1]} Billion`)
-        .transition()
-        .duration(100)
-        .style('opacity', 0.8)
-        .style('top', d3.event.pageY + 'px')
-        .style('left', d3.event.pageX + 40 + 'px')
-  })
-  .on('mouseout', d => {
-    tooltip.transition()
-        .duration(200)
-        .style('opacity', 0)
-  });
+      .on('mouseover', d => {
+        const yearMonthDay = d[0].split('-');
+        const year = yearMonthDay[0];
+        const month = yearMonthDay[1];
+        let quarter;
+
+        if (month > 0 && month <= 3) {
+          quarter = 'Q1';
+        } 
+        if (month > 3 && month <= 6) {
+          quarter = 'Q2';
+        } 
+        if (month > 6 && month <= 9) {
+          quarter = 'Q3';
+        } 
+        if (month > 9 && month <= 12) {
+          quarter = 'Q4';
+        } 
+      
+        const toolText = `${year} ${quarter} </br> $${d[1]} Billion`;
+        tooltip.html(toolText)
+            .transition()
+            .duration(100)
+            .style('opacity', 0.8)
+            .style('top', d3.event.pageY - 80 + 'px')
+            .style('left', d3.event.pageX - 100 +'px')
+      })
+      .on('mouseout', d => {
+        tooltip.transition()
+            .duration(200)
+            .style('opacity', 0)
+      });
 }
