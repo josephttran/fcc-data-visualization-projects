@@ -22,32 +22,28 @@ function displayChart(dataObject) {
     right: 40,
     bottom: 40,
   }
-
   const dataLen = dataObject.data.length;
   const barWidth = 2;
   const barRightMargin = 1;
   const containerWidth = (dataLen * (barWidth + barRightMargin)) + axisPadding.left + axisPadding.right;
-  
-  const containerHeight = 300;
+  const titleBackgroundHeight = 50;
+  const containerHeight = dataLen + titleBackgroundHeight + axisPadding.top + axisPadding.bottom;
 
   const svg = d3.select('#chart-container')
       .append('svg')
-      .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`)
+      .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
       
-  const title = dataObject.name
+  const title = dataObject.name;
   const data = dataObject.data;
 
-  displayTitle(svg, title);
+  displayTitle(svg, title, titleBackgroundHeight);
   displayAxis(svg, data, axisPadding);
-  displayBar(svg, data, barWidth, barRightMargin);
+  displayBar(svg, data, barWidth, barRightMargin, axisPadding);
 }
 
-function displayTitle(svg, dataTitle) {
-  console.log(dataTitle);
-
+function displayTitle(svg, dataTitle, titleBackgroundHeight) {
   const titleFontSize = 'calc(12px + 2vmin)';
   const titlePadding = 20
-  const titleBackgroundHeight = 50;
   
   // Chart title background
   svg.append('rect')
@@ -70,7 +66,7 @@ function displayTitle(svg, dataTitle) {
 function displayAxis(svg, data, padding) {
   const viewBox = svg.attr('viewBox');
   const width = viewBox.split(' ')[2] - padding.left - padding.right;
-  const height = viewBox.split(' ')[3]
+  const height = viewBox.split(' ')[3];
   
   // X-axis
   const xMin = d3.min(data, arr => { return d3.min(arr, d => arr[0]) });
@@ -97,28 +93,33 @@ function displayAxis(svg, data, padding) {
       .attr('id', 'y-axis')
       .attr('class', 'tick')
       .attr('transform', `translate(${padding.left}, 0)`)
-      .call(d3.axisLeft(yScale))
+      .call(d3.axisLeft(yScale));
 }
 
 // Bar
-function displayBar(svg, data, barWidth, barRightMargin) {
-  const regex = /[0-9]+/g
+function displayBar(svg, data, barWidth, barRightMargin, padding) {
+  const regex = /[0-9]+/g;
   const barStartX = parseInt(d3.select('#y-axis').attr('transform').match(regex)[0]);
   const barStartY = parseInt(d3.select('#x-axis').attr('transform').match(regex)[1]);
 
-  console.log(barStartX, barStartY);
+  const yMax = d3.max(data, arr => { return d3.max(arr, d => arr[1]) });
+  const height = parseInt(svg.attr('viewBox').split(' ')[3]);
+  const titleBgHeight = parseInt(d3.select('#title-bg').attr('height'))
+  const yAxisLength = height - titleBgHeight - padding.top - padding.bottom;
 
+  const yBarScale = yMax / yAxisLength;
   const barSpace = barWidth + barRightMargin;
+  
   svg.selectAll('.bar').data(data)
       .enter()
       .append('rect')
       .attr('class', 'bar')
       .attr('data-date', (d) => d[0])
       .attr('data-gdp', (d) => d[1])
-      .attr('x', (d, i) => barStartX + i * barSpace)
-      .attr('y', (d, i) => barStartY - d[1])
+      .attr('x', (d, i) => barStartX + barWidth + (i * barSpace))
+      .attr('y', (d, i) => barStartY - (d[1] / yBarScale))
       .attr('width', barWidth)
-      .attr('height', (d, i) => d[1] )
+      .attr('height', (d, i) => d[1] / yBarScale);
 
   displayToolTip(svg);
 }
