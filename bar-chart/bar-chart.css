@@ -23,7 +23,7 @@ html, body {
 div.tooltip {
   position: absolute;
   background: #fff;
-  color: #190e80;
+  color: #000;
   padding-top: 10px;
   width: 200px;
   height: 50px;
@@ -32,4 +32,14 @@ div.tooltip {
   border: 2px solid #bbb;
   border-radius: 5px;
   pointer-events: none;
+}
+
+div.tooltip::after {
+  position: absolute;
+  content: " ";
+  top: 100%;
+  left: 50%;
+  margin-left: -10px;
+  border: 10px solid;
+  border-color: #bbb transparent transparent transparent;
 }
