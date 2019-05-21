@@ -126,6 +126,8 @@ function displayDot(svg, axis, dataObjArr, colors) {
       .attr('cx', obj => axis.scales.x(obj['Year']))
       .attr('cy', obj => axis.scales.y(new Date('2019-01-01T00:' + obj['Time'])))
       .attr('r', 5)
+      .attr('stroke', 'black')
+      .attr('stroke-width', 1)
       .style('fill', obj => {
         let dotColor;
         if (obj['Doping'] === '') {
