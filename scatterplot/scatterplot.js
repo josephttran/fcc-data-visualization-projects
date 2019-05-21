@@ -15,6 +15,7 @@ function displayScatterplot(dataObjArr) {
   const scatterplotContainer = d3.select('#scatterplot-container');
   const containerWidth = 600;
   const containerHeight = 350;
+  const titleName = 'Doping Cases in Professional Cycling';
   const titleBgHeight = 50;
   const axisPadding = {
     top: 20,
@@ -46,6 +47,7 @@ function displayScatterplot(dataObjArr) {
     noAllegationColor: 'cyan',
   }
 
+  displayTitle(svg, titleName, titleBgHeight);
   displayAxis(svg, axis, translates);
   displayDot(svg, axis, dataObjArr, colors);
   displayTooltip(svg, tooltip);
@@ -76,6 +78,15 @@ function getScatterplotScales(dataObjArr, svgWidth, svgHeight, axisPadding, titl
   };
 
   return axis;
+}
+
+function displayTitle(svg, titleName, titleBgHeight) {
+  svg.append('text')
+      .text(titleName)
+      .attr('id', 'title')
+      .attr('text-anchor', 'middle')
+      .attr('x', '50%')
+      .attr('y', titleBgHeight / 2 + 10);
 }
 
 function displayAxis(svg, axis, translates) {
