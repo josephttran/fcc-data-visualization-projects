@@ -7,22 +7,22 @@
     console.log(dataObjArr);    
     displayScatterplot(dataObjArr);
   } catch(err) {
-    console.log(err)
+    console.log(err);
   }
 })();
 
 function displayScatterplot(dataObjArr) {
   const scatterplotContainer = d3.select('#scatterplot-container');
   const containerWidth = 600;
-  const containerHeight = 350;
+  const containerHeight = 320;
   const titleName = 'Doping Cases in Professional Cycling';
   const titleBgHeight = 50;
   const axisPadding = {
     top: 20,
-    left: 50,
+    left: 80,
     right: 120,
     bottom: 40,
-  }
+  };
   const tooltip = d3.select('body').append('div')
       .attr('id', 'tooltip')
       .style('opacity', 0);
@@ -31,7 +31,7 @@ function displayScatterplot(dataObjArr) {
       .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
 
   // Object with values function
-  const axis = getScatterplotScales(dataObjArr, containerWidth, containerHeight, axisPadding, titleBgHeight)
+  const axis = getScatterplotScales(dataObjArr, containerWidth, containerHeight, axisPadding, titleBgHeight);
   // Axis Translation coordinates
   const translates = {
     xAxis: { 
@@ -49,6 +49,7 @@ function displayScatterplot(dataObjArr) {
 
   displayTitle(svg, titleName, titleBgHeight);
   displayAxis(svg, axis, translates);
+  displayAxisLabel(svg, axisPadding, titleBgHeight);
   displayDot(svg, axis, dataObjArr, colors);
   displayTooltip(svg, tooltip);
   displayLegend(svg, axisPadding, colors);
@@ -101,6 +102,17 @@ function displayAxis(svg, axis, translates) {
       .attr('id', 'y-axis')
       .attr('transform', `translate(${translates.yAxis.x}, ${translates.yAxis.y})`)
       .call(axis.yAxis);
+}
+
+function displayAxisLabel(svg, axisPadding, titleBgHeight) {
+  const labelY = -1 * (svg.attr('viewBox').split(' ')[3] / 2 + titleBgHeight);
+  
+  svg.append('text')
+      .text('Time in Minutes')
+      .attr('transform', 'rotate(-90)')
+      .attr('x', labelY)
+      .attr('y', axisPadding.left - 50)
+      .style('font-size', 12);
 }
 
 function displayDot(svg, axis, dataObjArr, colors) {
