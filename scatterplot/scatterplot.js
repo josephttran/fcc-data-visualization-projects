@@ -15,6 +15,7 @@ function displayScatterplot(dataObjArr) {
   const scatterplotContainer = d3.select('#scatterplot-container');
   const containerWidth = 600;
   const containerHeight = 350;
+  const titleBgHeight = 50;
   const axisPadding = {
     top: 20,
     left: 50,
@@ -24,34 +25,56 @@ function displayScatterplot(dataObjArr) {
   const svg = scatterplotContainer.append('svg')
       .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
 
-  displayAxis(svg, dataObjArr, axisPadding);
+  // Object with values function
+  const axis = getScatterplotScales(dataObjArr, containerWidth, containerHeight, axisPadding, titleBgHeight)
+  // Axis Translation coordinates
+  const translates = {
+    xAxis: { 
+      x: 0, 
+      y: containerHeight - axisPadding.bottom },
+    yAxis: { 
+      x: axisPadding.left, 
+      y: 0},
+  };
+
+  displayAxis(svg, axis, translates);
+
 }
 
-function displayAxis(svg, dataObjArr, padding) {
-  const viewBox = svg.attr('viewBox');
-  const width = parseInt(viewBox.split(' ')[2] - padding.left - padding.right);
-  const height = parseInt(viewBox.split(' ')[3] - padding.top - padding.bottom);
+function getScatterplotScales(dataObjArr, svgWidth, svgHeight, axisPadding, titleBgHeight) {
   // X-axis
   const xMin = d3.min(dataObjArr, obj => obj['Year'] );
   const xMax = d3.max(dataObjArr, obj => obj['Year'] );
-  const xDomain = [xMin, xMax];
-  const xRange = [0, width];
+  const xDomain = [xMin - 1, xMax + 1];
+  const xRange = [axisPadding.left, svgWidth - axisPadding.right];
   const xScale = d3.scaleLinear(xDomain, xRange);
+  const xAxis = d3.axisBottom(xScale).tickFormat(year => year)
+  // Y-axis
+  const arr = dataObjArr.map(obj => obj['Time'])
+  const yRange = [svgHeight - axisPadding.bottom, axisPadding.top + titleBgHeight];
+  const yScale = d3.scalePoint(arr, yRange);
+  const yAxis = d3.axisLeft(yScale).tickArguments([d3.timeSecond.every(15)])
 
+  const axis = {
+    scales: {
+      x: xScale,
+      y: yScale,
+    },
+    xAxis: xAxis,
+    yAxis: yAxis,
+  };
+
+  return axis;
+}
+
+function displayAxis(svg, axis, translates) {
   svg.append('g')
       .attr('id', 'x-axis')
-      .attr('transform', `translate(${padding.left}, ${height})`)
-      .call(d3.axisBottom(xScale).tickFormat(year => year));
-
-  // Y-axis
-  const yMin = d3.min(dataObjArr, obj => obj['Time'] );
-  const yMax = d3.max(dataObjArr, obj => obj['Time'] );
-  const yDomain = [yMin, yMax];
-  const yRange = [height, padding.top];
-  const yScale = d3.scaleOrdinal(yDomain, yRange);
+      .attr('transform', `translate(${translates.xAxis.x}, ${translates.xAxis.y})`)
+      .call(axis.xAxis);
 
   svg.append('g')
       .attr('id', 'y-axis')
-      .attr('transform', `translate(${padding.left}, 0)`)
-      .call(d3.axisLeft(yScale));
+      .attr('transform', `translate(${translates.yAxis.x}, ${translates.yAxis.y})`)
+      .call(axis.yAxis);
 }
