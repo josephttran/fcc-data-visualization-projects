@@ -19,9 +19,13 @@ function displayScatterplot(dataObjArr) {
   const axisPadding = {
     top: 20,
     left: 50,
-    right: 40,
+    right: 100,
     bottom: 40,
   }
+  const tooltip = d3.select('body').append('div')
+      .attr('id', 'tooltip')
+      .style('opacity', 0)
+
   const svg = scatterplotContainer.append('svg')
       .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
 
@@ -39,6 +43,7 @@ function displayScatterplot(dataObjArr) {
 
   displayAxis(svg, axis, translates);
   displayDot(svg, axis, dataObjArr);
+  displayTooltip(svg, tooltip);
 }
 
 function getScatterplotScales(dataObjArr, svgWidth, svgHeight, axisPadding, titleBgHeight) {
@@ -91,4 +96,40 @@ function displayDot(svg, axis, dataObjArr) {
       .attr('cy', obj => axis.scales.y(obj['Time']))
       .attr('r', 5)
       .style('fill', 'blue');
+}
+
+function displayTooltip(svg, tooltip) {
+  svg.selectAll('.dot')
+      .on('mouseover', function(obj) {
+        const tooltipWidth = 'auto';
+        let tooltipHeight = 170;
+
+        if (obj['Doping'] === '') {
+          tooltipHeight = 148;
+        }
+
+        const left = d3.event.pageX + 'px';
+        const top  = d3.event.pageY - tooltipHeight + 'px';
+        
+        const htmlText = ` ${obj['Name']}: ${obj['Nationality']} </br> 
+            ${obj['Time']} </br>
+            </br>
+            Year: ${obj['Year']} </br> 
+            ${obj['Doping']}
+        `;
+
+        tooltip.html(htmlText)
+            .style('width', tooltipWidth)
+            .style('left', left)
+            .style('top', top)
+            .attr('data-year', obj['Year'])
+            .transition()
+            .duration(500)
+            .style('opacity', 0.9)
+      })
+      .on('mouseout', obj => {
+          tooltip.style('opacity', 0)
+              .transition()
+              .duration(100)
+      })
 }
