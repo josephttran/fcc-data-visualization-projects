@@ -38,7 +38,7 @@ function displayScatterplot(dataObjArr) {
   };
 
   displayAxis(svg, axis, translates);
-
+  displayDot(svg, axis, dataObjArr);
 }
 
 function getScatterplotScales(dataObjArr, svgWidth, svgHeight, axisPadding, titleBgHeight) {
@@ -77,4 +77,18 @@ function displayAxis(svg, axis, translates) {
       .attr('id', 'y-axis')
       .attr('transform', `translate(${translates.yAxis.x}, ${translates.yAxis.y})`)
       .call(axis.yAxis);
+}
+
+function displayDot(svg, axis, dataObjArr) {
+  svg.selectAll('.dot')
+      .data(dataObjArr)
+      .enter()
+      .append('circle')
+      .attr('class', 'dot')
+      .attr('data-xvalue', obj => obj['Year'])
+      .attr('data-yvalue', obj => obj['Time'])
+      .attr('cx', obj => axis.scales.x(obj['Year']))
+      .attr('cy', obj => axis.scales.y(obj['Time']))
+      .attr('r', 5)
+      .style('fill', 'blue');
 }
