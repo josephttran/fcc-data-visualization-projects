@@ -25,7 +25,7 @@ function displayScatterplot(dataObjArr) {
   }
   const tooltip = d3.select('body').append('div')
       .attr('id', 'tooltip')
-      .style('opacity', 0)
+      .style('opacity', 0);
 
   const svg = scatterplotContainer.append('svg')
       .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
@@ -45,7 +45,7 @@ function displayScatterplot(dataObjArr) {
   const colors = {
     allegationColor: 'blue',
     noAllegationColor: 'cyan',
-  }
+  };
 
   displayTitle(svg, titleName, titleBgHeight);
   displayAxis(svg, axis, translates);
@@ -61,13 +61,15 @@ function getScatterplotScales(dataObjArr, svgWidth, svgHeight, axisPadding, titl
   const xDomain = [xMin - 1, xMax + 1];
   const xRange = [axisPadding.left, svgWidth - axisPadding.right];
   const xScale = d3.scaleLinear(xDomain, xRange);
-  const xAxis = d3.axisBottom(xScale).tickFormat(year => year)
+  const xAxis = d3.axisBottom(xScale).tickFormat(year => year);
   // Y-axis
-  const arr = dataObjArr.map(obj => obj['Time'])
+  const [yMin, yMax] = d3.extent(dataObjArr.map(obj => obj['Time']));
+  const yDomain = [new Date('2019-01-01T00:' + yMin), new Date('2019-01-01T00:' + yMax)];
   const yRange = [svgHeight - axisPadding.bottom, axisPadding.top + titleBgHeight];
-  const yScale = d3.scalePoint(arr, yRange);
-  const yAxis = d3.axisLeft(yScale).tickArguments([d3.timeSecond.every(15)])
-
+  const yScale = d3.scaleTime(yDomain, yRange);
+  const timeFormat = d3.timeFormat('%M:%S');
+  const yAxis = d3.axisLeft(yScale).tickFormat(d => timeFormat(d));
+ 
   const axis = {
     scales: {
       x: xScale,
@@ -108,9 +110,9 @@ function displayDot(svg, axis, dataObjArr, colors) {
       .append('circle')
       .attr('class', 'dot')
       .attr('data-xvalue', obj => obj['Year'])
-      .attr('data-yvalue', obj => obj['Time'])
+      .attr('data-yvalue', obj => new Date('2019-01-01T00:' + obj['Time']))
       .attr('cx', obj => axis.scales.x(obj['Year']))
-      .attr('cy', obj => axis.scales.y(obj['Time']))
+      .attr('cy', obj => axis.scales.y(new Date('2019-01-01T00:' + obj['Time'])))
       .attr('r', 5)
       .style('fill', obj => {
         let dotColor;
@@ -148,14 +150,14 @@ function displayTooltip(svg, tooltip) {
             .style('left', left)
             .style('top', top)
             .attr('data-year', obj['Year'])
-            .transition()
-            .duration(500)
             .style('opacity', 0.9)
+            .transition()
+            .duration(500);
       })
       .on('mouseout', obj => {
           tooltip.style('opacity', 0)
               .transition()
-              .duration(100)
+              .duration(100);
       })
 }
 
@@ -174,21 +176,21 @@ function displayLegend(svg, axisPadding, colors) {
       .attr('class', 'legend-rect')
       .attr('x', legendX)
       .attr('y', legendY)
-      .style('fill', colors.allegationColor)
+      .style('fill', colors.allegationColor);
 
   g.append('text').text('Doping Allegation')
       .attr('class', 'legend-text')
       .attr('x', legendTextX)
-      .attr('y', legendTextY)
+      .attr('y', legendTextY);
       
   g.append('rect')
       .attr('class', 'legend-rect')
       .attr('x', legendX)
       .attr('y', legendY + squareLength + gap)
-      .style('fill', colors.noAllegationColor)
+      .style('fill', colors.noAllegationColor);
 
   g.append('text').text('No Allegation')
       .attr('class', 'legend-text')
       .attr('x', legendTextX)
-      .attr('y', legendTextY + squareLength + gap)
+      .attr('y', legendTextY + squareLength + gap);
 }
