@@ -19,7 +19,7 @@ function displayScatterplot(dataObjArr) {
   const axisPadding = {
     top: 20,
     left: 50,
-    right: 100,
+    right: 120,
     bottom: 40,
   }
   const tooltip = d3.select('body').append('div')
@@ -40,10 +40,16 @@ function displayScatterplot(dataObjArr) {
       x: axisPadding.left, 
       y: 0},
   };
+  
+  const colors = {
+    allegationColor: 'blue',
+    noAllegationColor: 'cyan',
+  }
 
   displayAxis(svg, axis, translates);
-  displayDot(svg, axis, dataObjArr);
+  displayDot(svg, axis, dataObjArr, colors);
   displayTooltip(svg, tooltip);
+  displayLegend(svg, axisPadding, colors);
 }
 
 function getScatterplotScales(dataObjArr, svgWidth, svgHeight, axisPadding, titleBgHeight) {
@@ -84,7 +90,7 @@ function displayAxis(svg, axis, translates) {
       .call(axis.yAxis);
 }
 
-function displayDot(svg, axis, dataObjArr) {
+function displayDot(svg, axis, dataObjArr, colors) {
   svg.selectAll('.dot')
       .data(dataObjArr)
       .enter()
@@ -95,7 +101,15 @@ function displayDot(svg, axis, dataObjArr) {
       .attr('cx', obj => axis.scales.x(obj['Year']))
       .attr('cy', obj => axis.scales.y(obj['Time']))
       .attr('r', 5)
-      .style('fill', 'blue');
+      .style('fill', obj => {
+        let dotColor;
+        if (obj['Doping'] === '') {
+          dotColor = colors.noAllegationColor;
+        } else {
+          dotColor = colors.allegationColor;
+        }
+        return dotColor;
+      })
 }
 
 function displayTooltip(svg, tooltip) {
@@ -132,4 +146,38 @@ function displayTooltip(svg, tooltip) {
               .transition()
               .duration(100)
       })
+}
+
+function displayLegend(svg, axisPadding, colors) {
+  const squareLength = 10;
+  const gap = 8; 
+  const legendX = svg.attr('viewBox').split(' ')[2] - axisPadding.right;
+  const legendY = svg.attr('viewBox').split(' ')[3] / 2;
+  const legendTextX = legendX + squareLength + 5;
+  const legendTextY = legendY + squareLength;
+  
+  const g = svg.append('g')
+      .attr('id', 'legend');
+
+  g.append('rect')
+      .attr('class', 'legend-rect')
+      .attr('x', legendX)
+      .attr('y', legendY)
+      .style('fill', colors.allegationColor)
+
+  g.append('text').text('Doping Allegation')
+      .attr('class', 'legend-text')
+      .attr('x', legendTextX)
+      .attr('y', legendTextY)
+      
+  g.append('rect')
+      .attr('class', 'legend-rect')
+      .attr('x', legendX)
+      .attr('y', legendY + squareLength + gap)
+      .style('fill', colors.noAllegationColor)
+
+  g.append('text').text('No Allegation')
+      .attr('class', 'legend-text')
+      .attr('x', legendTextX)
+      .attr('y', legendTextY + squareLength + gap)
 }

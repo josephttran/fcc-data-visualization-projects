@@ -35,3 +35,12 @@ div#tooltip::after {
   border: 10px solid;
   border-color: #bbb transparent transparent transparent;
 }
+
+.legend-rect {
+  width: 10px;
+  height: 10px;
+}
+
+.legend-text {
+  font-size: 12px;
+}
