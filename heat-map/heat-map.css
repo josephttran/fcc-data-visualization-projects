@@ -4,3 +4,10 @@ html, body {
   font-family: Arial, Helvetica, sans-serif;
   background-color: #bbb;
 }
+
+#heat-map {
+  margin: auto;
+  width: 90%;
+  margin-top: 72px;
+  background-color: #fff;
+}
