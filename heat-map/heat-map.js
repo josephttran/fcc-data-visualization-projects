@@ -54,11 +54,20 @@ function displayHeatMap(data) {
       .attr('viewBox', `0 0 ${mapWidth} ${mapHeight}`);
 
   const axis = getHeatMapAxis(data['monthlyVariance'], mapWidth, mapHeight, axisPadding, titleBgHeight);
+  // d3 scale chromatic range [0, 1]
+  const colorScale = d3.scaleSequential(d3.interpolateRdYlBu);
+  const [minTemp, maxTemp] = getMinMaxTemperature(data);
 
   displayHeading(svg, titleBgHeight, titleName, description);
   displayAxis(svg, mapHeight, axis, axisPadding);
-  displayCell(svg, data, axis, cell);
+  displayCell(svg, data, axis, cell, colorScale, maxTemp);
   displayTooltip(svg, tooltip);
+  displayLegend(svg, mapHeight, axisPadding, colorScale, maxTemp);
+}
+
+function getMinMaxTemperature(data) {
+  const temperatureArr = data['monthlyVariance'].map(obj => (obj['variance'] + data['baseTemperature']));
+  return d3.extent(temperatureArr);
 }
 
 function getMinMaxYear(data) {
@@ -123,7 +132,10 @@ function displayAxis(svg, svgHeight, axis, axisPadding) {
       .call(axis.yAxis);
 }
 
-function displayCell(svg, data, axis, cell) {
+/* In order to use this keyword to get data-temp for fill style, 
+ * use function instead of arrow function
+ */
+function displayCell(svg, data, axis, cell, colorScale, maxTemp) {
   const baseTemp = data['baseTemperature'];
 
   svg.selectAll('.cell')
@@ -138,7 +150,10 @@ function displayCell(svg, data, axis, cell) {
       .attr('y', obj => axis.scales.y(new Date(`${months[obj['month']]} 1, 2000`)) - cell.height)
       .attr('width', cell.width)
       .attr('height', cell.height)
-      .style('fill', 'lightblue');
+      .style('fill', function(obj) {
+        const temp = d3.select(this).attr('data-temp');
+        return colorScale(1 - temp / maxTemp)
+      });
 }
 
 function displayTooltip(svg, tooltip) {
@@ -179,4 +194,36 @@ function displayTooltip(svg, tooltip) {
         .transition()
         .duration(200)
       });
+}
+
+function displayLegend(svg, svgHeight, axisPadding, colorScale, maxTemperature) {
+  const numberOfColors = 8;
+  const boxWidth = 24;
+  const boxheight = boxWidth - 4;
+  const legendTickValues = [];
+  const tickStep = maxTemperature / numberOfColors;
+
+  for (let i = tickStep; i <= maxTemperature.toFixed(1); i+=tickStep) {
+    legendTickValues.push(i.toFixed(1));
+  }
+
+  const legendRange = [axisPadding.left, boxWidth * numberOfColors + axisPadding.left];
+  const legendScale = d3.scaleLinear([0, maxTemperature], legendRange);
+  const legendAxis = d3.axisBottom(legendScale).tickValues(legendTickValues).tickFormat(d => d);
+
+  const legend = svg.append('svg')
+      .attr('id', 'legend');
+
+  legend.append('g')
+      .attr('transform', `translate(0, ${svgHeight - axisPadding.bottom / 3})`)
+      .call(legendAxis);
+
+  for (let i = 0; i < numberOfColors; i++) {
+    legend.append('rect')
+        .attr('x', axisPadding.left + (i * boxWidth))
+        .attr('y', svgHeight - axisPadding.bottom / 3 - boxheight)
+        .attr('height', boxheight)
+        .attr('width', boxWidth)
+        .style('fill', colorScale(1 - (legendTickValues[i] / maxTemperature)));
+  }
 }
