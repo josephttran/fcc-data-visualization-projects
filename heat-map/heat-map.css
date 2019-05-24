@@ -11,3 +11,23 @@ html, body {
   margin-top: 72px;
   background-color: #fff;
 }
+
+rect:hover {
+  stroke: black;
+}
+
+div#tooltip {
+  position: absolute;
+  background-color: #fff;
+  color: #000;
+  margin: 30px;
+  padding: 10px;
+  width: auto;
+  height: 54;
+  font-size: 18px;
+  text-align: left;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+  opacity: 0;
+  pointer-events: none;
+}

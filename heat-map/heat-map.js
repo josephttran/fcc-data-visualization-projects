@@ -10,6 +10,21 @@
   }
 })()
 
+const months = {
+  1: 'January',
+  2: 'Febuary',
+  3: 'March',
+  4: 'April',
+  5: 'May',
+  6: 'June',
+  7: 'July',
+  8: 'August',
+  9: 'September',
+  10: 'October',
+  11: 'November',
+  12: 'December',
+};
+
 function displayHeatMap(data) {
   console.log(data);
   const heatMap = d3.select('#heat-map');
@@ -18,7 +33,7 @@ function displayHeatMap(data) {
   const axisPadding = {
     top: 10,
     left: 60,
-    right: 10,
+    right: 60,
     bottom: 80,
   };
   const titleBgHeight = 80;
@@ -30,7 +45,10 @@ function displayHeatMap(data) {
   const cell = {
     width: cellWidth,
     height: cellHeight,
-  }
+  };
+  const tooltip = d3.select('body').append('div')
+      .attr('id', 'tooltip')
+      .style('opacity', 0);
 
   const svg = heatMap.append('svg')
       .attr('viewBox', `0 0 ${mapWidth} ${mapHeight}`);
@@ -40,29 +58,9 @@ function displayHeatMap(data) {
   displayHeading(svg, titleBgHeight, titleName, description);
   displayAxis(svg, mapHeight, axis, axisPadding);
   displayCell(svg, data, axis, cell);
+  displayTooltip(svg, tooltip);
 }
 
-function displayHeading(svg, titleBgHeight, titleName, description) {
-  const titleFontSize = titleBgHeight / 4;
-  // Title
-  svg.append('text')
-      .text(titleName)
-      .attr('id', 'title')
-      .attr('x', '50%')
-      .attr('y', titleBgHeight / 3)
-      .style('text-anchor', 'middle')
-      .style('font-size', titleFontSize);
-      
-  // Description
-  svg.append('text')
-      .text(description)
-      .attr('id', 'description')
-      .attr('x', '50%')
-      .attr('y', titleBgHeight * 2 / 3)
-      .style('text-anchor', 'middle')
-      .style('font-size', titleFontSize - 4);
-}
-    
 function getMinMaxYear(data) {
   return d3.extent(data['monthlyVariance'].map(obj => obj['year']));
 }
@@ -92,6 +90,27 @@ function getHeatMapAxis(dataObjArr, svgWidth, svgHeight, axisPadding, titleBgHei
   return axis;
 }
 
+function displayHeading(svg, titleBgHeight, titleName, description) {
+  const titleFontSize = titleBgHeight / 4;
+  // Title
+  svg.append('text')
+      .text(titleName)
+      .attr('id', 'title')
+      .attr('x', '50%')
+      .attr('y', titleBgHeight / 3)
+      .style('text-anchor', 'middle')
+      .style('font-size', titleFontSize);
+      
+  // Description
+  svg.append('text')
+      .text(description)
+      .attr('id', 'description')
+      .attr('x', '50%')
+      .attr('y', titleBgHeight * 2 / 3)
+      .style('text-anchor', 'middle')
+      .style('font-size', titleFontSize - 4);
+}
+
 function displayAxis(svg, svgHeight, axis, axisPadding) {
   svg.append('g')
       .attr('id', 'x-axis')
@@ -106,20 +125,6 @@ function displayAxis(svg, svgHeight, axis, axisPadding) {
 
 function displayCell(svg, data, axis, cell) {
   const baseTemp = data['baseTemperature'];
-  const months = {
-    1: 'January',
-    2: 'Febuary',
-    3: 'March',
-    4: 'April',
-    5: 'May',
-    6: 'June',
-    7: 'July',
-    8: 'August',
-    9: 'September',
-    10: 'October',
-    11: 'November',
-    12: 'December',
-  };
 
   svg.selectAll('.cell')
       .data(data['monthlyVariance'])
@@ -134,4 +139,44 @@ function displayCell(svg, data, axis, cell) {
       .attr('width', cell.width)
       .attr('height', cell.height)
       .style('fill', 'lightblue');
+}
+
+function displayTooltip(svg, tooltip) {
+  svg.selectAll('.cell')
+      .on('mouseover', function(data) {
+        const tooltipLeftMarginPadding = parseInt(tooltip.style('padding')) + parseInt(tooltip.style('margin'));
+        const tooltipTopBottomMarginPadding = (parseInt(tooltip.style('padding')) * 2) 
+            + (parseInt(tooltip.style('margin')) * 2);
+
+        const tooltipHeight = parseInt(tooltip.style('height')) + tooltipTopBottomMarginPadding;
+        const tooltipWidth = parseInt(tooltip.style('width')) / 2 + tooltipLeftMarginPadding;
+        
+        const left = d3.event.pageX - tooltipWidth  + 'px';
+        const top = d3.event.pageY - tooltipHeight + 'px';
+        // Get temperature and round to one decimal place
+        let temperature = parseFloat(d3.select(this).attr('data-temp')).toFixed(1);
+        let variance = data['variance'].toFixed(1);
+        
+        if (variance > 0) {
+          variance = '+' + variance;
+        }
+
+        const htmlText = `${months[data['month']]} ${data['year']}</br></br>
+            Temperature: ${temperature}℃ </br>
+            Variance &nbsp;&nbsp;&nbsp : ${variance}℃
+        `;
+
+        tooltip.html(htmlText)
+            .attr('data-year', data['year'])
+            .style('opacity', 0.9)
+            .style('left', left)
+            .style('top', top)
+            .transition()
+            .duration(500)
+      })
+      .on('mouseout', function() {
+        tooltip.style('opacity', 0)
+        .transition()
+        .duration(200)
+      });
 }
