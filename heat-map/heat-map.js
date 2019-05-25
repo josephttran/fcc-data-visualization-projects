@@ -143,7 +143,7 @@ function displayCell(svg, data, axis, cell, colorScale, maxTemp) {
       .enter()
       .append('rect')
       .attr('class', 'cell')
-      .attr('data-month', obj => obj['month'])
+      .attr('data-month', obj => obj['month'] - 1)
       .attr('data-year', obj => obj['year'])
       .attr('data-temp', obj => baseTemp + obj['variance'])
       .attr('x', obj => axis.scales.x(obj['year']))
