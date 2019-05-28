@@ -31,6 +31,7 @@ function displayChoroplethMap(countyData, educationData) {
   const titleName = 'United States Educational Attainment';
   const description = `Percentage of adults age 25 and older with a bachelor's degree or higher (2010-2014)`;
   const paddingLeft = 200;
+
   const svg = choroplethMap.append('svg')
       .attr('viewBox', `0 0 ${mapWidth} ${mapHeight}`);
   
@@ -39,20 +40,7 @@ function displayChoroplethMap(countyData, educationData) {
 
   displayHeading(svg, titleBgHeight, titleName, description);
   displayCounties(svg, countiesGeoJson, paddingLeft);
-}
-
-function displayCounties(svg, countiesGeoJson, paddingLeft) {
-  console.log('countries geojson:', countiesGeoJson)
-  const descriptionY = parseInt(d3.select('#description').attr('y'));
-  const projection = geoProjectionScale(0.8, paddingLeft, descriptionY)
-  const path = d3.geoPath().projection(projection);
-
-  svg.selectAll('path')
-      .data(countiesGeoJson.features)
-      .enter()
-      .append('path')
-      .attr('class', 'county')
-      .attr('d', path);
+  addEducationDataToCounties(svg, educationData);
 }
 
 function displayHeading(svg, titleBgHeight, titleName, description) {
@@ -76,10 +64,36 @@ function displayHeading(svg, titleBgHeight, titleName, description) {
       .style('font-size', titleFontSize / 3);
 }
 
+function displayCounties(svg, countiesGeoJson, paddingLeft) {
+  console.log('countries geojson:', countiesGeoJson)
+  const descriptionY = parseInt(d3.select('#description').attr('y'));
+  const projection = geoProjectionScale(0.8, paddingLeft, descriptionY)
+  const path = d3.geoPath().projection(projection);
+
+  svg.selectAll('path')
+      .data(countiesGeoJson.features)
+      .enter()
+      .append('path')
+      .attr('class', 'county')
+      .attr('d', path)
+}
+
 function geoProjectionScale(scaleFactor, translateX, translateY) {
   return d3.geoTransform({
     point: function(x, y) {
       this.stream.point(x * scaleFactor + translateX, y * scaleFactor + translateY);
     }
   });
+}
+
+function addEducationDataToCounties(svg, educationData) {
+  svg.selectAll('.county')
+      .each(function(d) {
+        const objIndex = educationData.map(obj => obj['fips']).indexOf(d['id']);
+        
+        d3.select(this)
+            .datum(educationData[objIndex])
+            .attr('data-fips', educationData[objIndex]['fips'])
+            .attr('data-education', educationData[objIndex]['bachelorsOrHigher'])
+      });
 }
