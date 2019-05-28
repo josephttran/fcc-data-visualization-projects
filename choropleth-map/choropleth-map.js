@@ -30,10 +30,29 @@ function displayChoroplethMap(countyData, educationData) {
   const titleBgHeight = 200;
   const titleName = 'United States Educational Attainment';
   const description = `Percentage of adults age 25 and older with a bachelor's degree or higher (2010-2014)`;
+  const paddingLeft = 200;
   const svg = choroplethMap.append('svg')
       .attr('viewBox', `0 0 ${mapWidth} ${mapHeight}`);
   
+  const counties = countyData['objects']['counties'];
+  const countiesGeoJson = topojson.feature(countyData, counties);
+
   displayHeading(svg, titleBgHeight, titleName, description);
+  displayCounties(svg, countiesGeoJson, paddingLeft);
+}
+
+function displayCounties(svg, countiesGeoJson, paddingLeft) {
+  console.log('countries geojson:', countiesGeoJson)
+  const descriptionY = parseInt(d3.select('#description').attr('y'));
+  const projection = geoProjectionScale(0.8, paddingLeft, descriptionY)
+  const path = d3.geoPath().projection(projection);
+
+  svg.selectAll('path')
+      .data(countiesGeoJson.features)
+      .enter()
+      .append('path')
+      .attr('class', 'county')
+      .attr('d', path);
 }
 
 function displayHeading(svg, titleBgHeight, titleName, description) {
@@ -55,4 +74,12 @@ function displayHeading(svg, titleBgHeight, titleName, description) {
       .attr('y', titleBgHeight * 2 / 3)
       .style('text-anchor', 'middle')
       .style('font-size', titleFontSize / 3);
+}
+
+function geoProjectionScale(scaleFactor, translateX, translateY) {
+  return d3.geoTransform({
+    point: function(x, y) {
+      this.stream.point(x * scaleFactor + translateX, y * scaleFactor + translateY);
+    }
+  });
 }

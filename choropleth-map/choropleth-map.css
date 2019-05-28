@@ -11,3 +11,13 @@ html, body {
   margin-top: 72px;
   background-color: #fff;
 }
+
+#title {
+  background-color: aqua;
+}
+
+path {
+  stroke: #ffffff;
+  stroke-width: 0.5px;
+  fill: rgb(134, 141, 243);
+}
