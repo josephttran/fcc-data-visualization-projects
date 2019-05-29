@@ -45,6 +45,7 @@ function displayChoroplethMap(countyData, educationData) {
   displayHeading(svg, titleBgHeight, titleName, description);
   displayCounties(svg, countiesGeoJson, paddingLeft);
   addEducationDataToCounties(svg, educationData);
+  fillCounties(svg, colorScale);
   displayTooltip(svg, tooltip);
   displayLegend(svg, mapHeight, paddingLeft, colorScale);
 }
@@ -71,7 +72,6 @@ function displayHeading(svg, titleBgHeight, titleName, description) {
 }
 
 function displayCounties(svg, countiesGeoJson, paddingLeft) {
-  console.log('countries geojson:', countiesGeoJson)
   const descriptionY = parseInt(d3.select('#description').attr('y'));
   const projection = geoProjectionScale(0.8, paddingLeft, descriptionY)
   const path = d3.geoPath().projection(projection);
@@ -102,6 +102,14 @@ function addEducationDataToCounties(svg, educationData) {
             .attr('data-fips', educationData[objIndex]['fips'])
             .attr('data-education', educationData[objIndex]['bachelorsOrHigher'])
       });
+}
+
+function fillCounties(svg, colorScale) {
+  svg.selectAll('.county')
+      .style('fill', obj => {
+        const educationRate = obj['bachelorsOrHigher'];
+        return colorScale(educationRate/100)
+      })
 }
 
 function displayTooltip(svg, tooltip) {
