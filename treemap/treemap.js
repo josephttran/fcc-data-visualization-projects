@@ -30,8 +30,42 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
   const treemap = d3.select('#treemap');
   const mapWidth = 1200;
   const mapHeight = 640;
+  const navList = 'Nav PlaceHolder'
+  const titleName = 'Title Name Placeholder';
+  const description = 'Description Placeholder';
+  const titleBgHeight = 128;
 
   const svg = treemap.append('svg')
       .attr('viewBox', `0 0 ${mapWidth} ${mapHeight}`);
 
+  displayHeading(svg, titleBgHeight, navList, titleName, description);
+}
+
+function displayHeading(svg, titleBgHeight, navList, titleName, description) {
+  const titleFontSize = titleBgHeight / 4;
+
+  svg.append('text')
+      .text(navList)
+      .attr('id', 'nav-list')
+      .attr('x', '50%')
+      .attr('y', titleBgHeight / 4)
+      .style('text-anchor', 'middle')
+      .style('font-size', titleFontSize / 2);
+
+  svg.append('text')
+      .text(titleName)
+      .attr('id', 'title')
+      .attr('x', '50%')
+      .attr('y', titleBgHeight * 3 / 4)
+      .style('text-anchor', 'middle')
+      .style('font-weight', 'bold')
+      .style('font-size', titleFontSize);
+      
+  svg.append('text')
+      .text(description)
+      .attr('id', 'description')
+      .attr('x', '50%')
+      .attr('y', titleBgHeight)
+      .style('text-anchor', 'middle')
+      .style('font-size', titleFontSize / 2);
 }
