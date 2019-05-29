@@ -40,11 +40,13 @@ function displayChoroplethMap(countyData, educationData) {
   
   const counties = countyData['objects']['counties'];
   const countiesGeoJson = topojson.feature(countyData, counties);
+  const colorScale = d3.scaleSequential(d3.interpolateGreens)
 
   displayHeading(svg, titleBgHeight, titleName, description);
   displayCounties(svg, countiesGeoJson, paddingLeft);
   addEducationDataToCounties(svg, educationData);
   displayTooltip(svg, tooltip);
+  displayLegend(svg, mapHeight, paddingLeft, colorScale);
 }
 
 function displayHeading(svg, titleBgHeight, titleName, description) {
@@ -74,7 +76,7 @@ function displayCounties(svg, countiesGeoJson, paddingLeft) {
   const projection = geoProjectionScale(0.8, paddingLeft, descriptionY)
   const path = d3.geoPath().projection(projection);
 
-  svg.selectAll('path')
+  svg.append('g').selectAll('path')
       .data(countiesGeoJson.features)
       .enter()
       .append('path')
@@ -132,4 +134,61 @@ function displayTooltip(svg, tooltip) {
             .transition()
             .duration(200);
       })
+}
+
+function displayLegend(svg, svgHeight, paddingLeft, colorScale) {
+  const legendX = paddingLeft / 4;
+  const legendY = svgHeight * 3 / 4;
+  
+  const numOfBox = 9;
+  const boxHeight = 30;
+  const boxWidth = boxHeight + 4;
+  const tickLine = boxWidth + 5;
+  
+  const numOfTick = numOfBox - 1;
+  const legendTickValues = [];
+  const tickStart = 3;
+  const tickStep = 9;
+  let tick = tickStart;
+
+  for (let i = 0; i < numOfTick; i++) {
+    legendTickValues.push(tick);
+    tick += tickStep;
+  }
+  
+  const legendRange = [legendY, legendY - boxHeight * numOfBox];
+  const legendScale = d3.scaleBand(legendTickValues, legendRange)
+      .paddingInner(1)
+      .paddingOuter(1);
+
+  const legendAxis = d3.axisRight(legendScale)
+      .tickSize(tickLine)
+      .tickPadding(10)
+      .tickFormat(d => d + '%');
+
+  const legend = svg.append('svg')
+      .attr('id', 'legend');
+  // Legend boxes with scaling color
+  let colorNum;
+  for (let i = 0; i < numOfBox; i++) {
+    colorNum = legendTickValues[i] / 100;
+
+    if (i + 1 === numOfBox) {
+      // Box above last tick mark      
+      colorNum = 1;
+    }
+
+    legend.append('rect')
+        .attr('x', legendX)
+        .attr('y', legendY - (i * boxHeight) - boxHeight)
+        .attr('height', boxHeight)
+        .attr('width', boxWidth)
+        .style('fill', colorScale(colorNum));
+  }
+
+  // Tick marks
+  legend.append('g')
+      .call(legendAxis)
+      .attr('transform', `translate(${legendX}, 0)`)
+      .attr('font-size', 16);
 }

@@ -16,8 +16,8 @@ html, body {
   background-color: aqua;
 }
 
-path {
-  stroke: #ffffff;
+.county {
+  stroke: #fff;
   stroke-width: 0.5px;
   fill: rgb(134, 141, 243);
 }
@@ -35,4 +35,9 @@ div#tooltip {
   border-radius: 5px;
   opacity: 0;
   pointer-events: none;
+}
+
+#legend path {
+  /* hide y-axis vertical line*/
+  stroke: none;
 }
