@@ -27,13 +27,14 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
   console.log(pledgesData);
   console.log(moviesData);
   console.log(videoGameData);
+  // Container
   const treemap = d3.select('#treemap');
-
+  // Treemap heading
   const navList = 'Nav PlaceHolder'
   const titleName = 'Title Name Placeholder';
   const description = 'Description Placeholder';
   const titleBgHeight = 128;
-  
+  // Treemap
   const tileContainerWidth = 1600;
   const tileContainerHeight = 900;
   const tileContainerPaddingTop = 20;
@@ -42,9 +43,10 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
     y: titleBgHeight + tileContainerPaddingTop,
   };
   const fontSize = 14;
-  
-  const colorScale = d3.scaleSequential(d3.interpolateRainbow);
-
+  // Color scale
+  const colors = d3.schemeAccent.concat(d3.schemeSet3);
+  const colorScale = d3.scaleOrdinal(colors);
+  // Legend
   const legendHeight = 300;
   const treemapWidth =  parseInt(d3.select('#treemap').style('width'));
   const legendPaddingTop = 50;
@@ -53,12 +55,12 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
     x: treemapWidth / 2 - textLength,
     y: titleBgHeight + tileContainerPaddingTop + tileContainerHeight + legendPaddingTop,
   };
-
+  // SVG
   const svg = treemap.append('svg')
       .attr('viewBox', `0 0 ${tileContainerWidth} ${tileContainerHeight + titleBgHeight + legendHeight}`);
   
   displayHeading(svg, titleBgHeight, navList, titleName, description);
-  displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, videoGameData, fontSize);
+  displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, videoGameData, colorScale);
   displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, videoGameData, colorScale);
 }
 
@@ -96,7 +98,7 @@ function displayHeading(svg, titleBgHeight, navList, titleName, description) {
  * Root node needed to compute hierarchial layout
  * Must call root.sum before invoking d3.treemap
  */
-function displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, data, fontSize) {
+function displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, data, colorScale) {
   const tileContainer = svg.append('g')
       .attr('id', 'tile-container')
       .attr('transform', `translate(${tileContainerTranslate.x}, ${tileContainerTranslate.y})`);
@@ -124,7 +126,7 @@ function displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, ti
       .attr('data-value', d => d.data.value)
       .attr('width', d => d.x1 - d.x0)
       .attr('height', d => d.y1 - d.y0)
-      .style('fill', 'cyan')
+      .style('fill', d => colorScale(d.data.category))
       .style('stroke', 'white')
 
   tiles.append('text')
@@ -176,7 +178,7 @@ function displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, tex
           .attr('y', y)
           .attr('width', boxWidth)
           .attr('height', boxHeight)
-          .style('fill', colorScale(index / numberOfColors));
+          .style('fill', colorScale(data.children[index].name));
 
       legend.append('text')
           .attr('dx', j * textLength + boxWidth + boxMargin)
