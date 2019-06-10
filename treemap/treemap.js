@@ -55,6 +55,10 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
     x: treemapWidth / 2 - textLength,
     y: titleBgHeight + tileContainerPaddingTop + tileContainerHeight + legendPaddingTop,
   };
+  // Tooltip
+  const tooltip = d3.select('body').append('div')
+      .attr('id', 'tooltip')
+      .style('opacity', 0);
   // SVG
   const svg = treemap.append('svg')
       .attr('viewBox', `0 0 ${tileContainerWidth} ${tileContainerHeight + titleBgHeight + legendHeight}`);
@@ -62,6 +66,7 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
   displayHeading(svg, titleBgHeight, navList, titleName, description);
   displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, videoGameData, colorScale);
   displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, videoGameData, colorScale);
+  displayTooltip(svg, tooltip);
 }
 
 function displayHeading(svg, titleBgHeight, navList, titleName, description) {
@@ -190,4 +195,37 @@ function displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, tex
     }
     y += boxHeight + boxMargin;
   }
+}
+
+function displayTooltip(svg, tooltip) {
+  svg.selectAll('.tile')
+  .on('mousemove', function(d) {
+    const tooltipLeftMarginPadding = parseInt(tooltip.style('padding')) + parseInt(tooltip.style('margin'));
+    const tooltipTopBottomMarginPadding = (parseInt(tooltip.style('padding')) * 2) 
+        + (parseInt(tooltip.style('margin')) * 2);
+
+    const tooltipHeight = parseInt(tooltip.style('height')) + tooltipTopBottomMarginPadding;
+    const tooltipWidth = parseInt(tooltip.style('width')) / 2 + tooltipLeftMarginPadding;
+    
+    const left = d3.event.pageX - tooltipWidth  + 'px';
+    const top = d3.event.pageY - tooltipHeight + 'px';
+
+    const htmlText = `Name: ${d.data.name}</br>
+        Category: ${d.data.category}</br>
+        Value: ${d.data.value}
+    `;
+
+    tooltip.html(htmlText)
+        .attr('data-value', d.data.value)
+        .style('opacity', 0.9)
+        .style('left', left)
+        .style('top', top)
+        .transition()
+        .duration(500)
+  })
+  .on('mouseout', function() {
+    tooltip.style('opacity', 0)
+    .transition()
+    .duration(200)
+  });
 }
