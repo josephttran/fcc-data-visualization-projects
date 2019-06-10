@@ -42,12 +42,24 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
     y: titleBgHeight + tileContainerPaddingTop,
   };
   const fontSize = 14;
+  
+  const colorScale = d3.scaleSequential(d3.interpolateRainbow);
+
+  const legendHeight = 300;
+  const treemapWidth =  parseInt(d3.select('#treemap').style('width'));
+  const legendPaddingTop = 50;
+  const textLength = 200;
+  const legendTranslate = {
+    x: treemapWidth / 2 - textLength,
+    y: titleBgHeight + tileContainerPaddingTop + tileContainerHeight + legendPaddingTop,
+  };
 
   const svg = treemap.append('svg')
-      .attr('viewBox', `0 0 ${tileContainerWidth} ${tileContainerHeight + titleBgHeight}`);
+      .attr('viewBox', `0 0 ${tileContainerWidth} ${tileContainerHeight + titleBgHeight + legendHeight}`);
   
   displayHeading(svg, titleBgHeight, navList, titleName, description);
   displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, videoGameData, fontSize);
+  displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, videoGameData, colorScale);
 }
 
 function displayHeading(svg, titleBgHeight, navList, titleName, description) {
@@ -140,4 +152,40 @@ function displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, ti
           }
         }
       });
+}
+
+function displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, data, colorScale) {
+  const numberOfColors = data.children.length;
+  const column = 3;
+  const row = numberOfColors / column;
+
+  const boxMargin = 10;
+  const boxHeight = (legendHeight - legendPaddingTop) / (row + boxMargin / 2);
+  const boxWidth = boxHeight;
+  
+  const legend = svg.append('g')
+      .attr('id', 'legend')
+      .attr('transform', `translate(${legendTranslate.x}, ${legendTranslate.y})`);
+  
+  let y = 0;
+  let index = 0;
+  for (let i = 0; i < row; i++) {
+    for (let j = 0; j < column; j++) {
+      legend.append('rect')
+          .attr('x', j * textLength)
+          .attr('y', y)
+          .attr('width', boxWidth)
+          .attr('height', boxHeight)
+          .style('fill', colorScale(index / numberOfColors));
+
+      legend.append('text')
+          .attr('dx', j * textLength + boxWidth + boxMargin)
+          .attr('dy', y + boxHeight)
+          .text(data.children[index].name)
+          .style('font-size', boxHeight);
+
+    index++;
+    }
+    y += boxHeight + boxMargin;
+  }
 }
