@@ -12,6 +12,10 @@ html, body {
   background-color: #fff;
 }
 
+#nav {
+  cursor: pointer;
+}
+
 div#tooltip {
   position: absolute;
   background-color: #fff;

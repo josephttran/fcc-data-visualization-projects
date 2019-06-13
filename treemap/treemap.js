@@ -29,10 +29,26 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
   console.log(videoGameData);
   // Container
   const treemap = d3.select('#treemap');
-  // Treemap heading
-  const navList = 'Nav PlaceHolder'
-  const titleName = 'Title Name Placeholder';
-  const description = 'Description Placeholder';
+  /* Treemap heading
+   * headingTextList navList index relate to titleDescription index
+   */
+  const headingTextList = {
+    navList: ['Video Game Data', 'Movies Data', 'Kickstarter Data'],
+    titleDescription: [
+      {
+        titleName: 'Video Game Sales',
+        description: 'Top 100 Sold Grouped by Platform',
+      },
+      {
+        titleName: 'Movies Sales',
+        description: 'Top 100 Gross Movies Grouped by Genre',
+      },
+      {
+        titleName: 'Kickstarter Pledges',
+        description: 'Top 100 Grouped by Category',
+      }
+    ]
+  };
   const titleBgHeight = 128;
   // Treemap
   const tileContainerWidth = 1600;
@@ -62,42 +78,118 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
   // SVG
   const svg = treemap.append('svg')
       .attr('viewBox', `0 0 ${tileContainerWidth} ${tileContainerHeight + titleBgHeight + legendHeight}`);
-  
-  displayHeading(svg, titleBgHeight, navList, titleName, description);
-  displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, videoGameData, colorScale);
-  displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, videoGameData, colorScale);
+  const data = videoGameData;
+
+  displayHeading(svg, titleBgHeight, headingTextList);
+  displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, data, colorScale);
+  displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, data, colorScale);
   displayTooltip(svg, tooltip);
 }
 
-function displayHeading(svg, titleBgHeight, navList, titleName, description) {
+function displayHeading(svg, titleBgHeight, headingTextList) {
+  const headingGroup = svg.append('g')
+      .attr('id', 'heading-group')
+      .datum(headingTextList.titleDescription);
+
+  const svgWidth = parseInt(d3.select('svg').attr('viewBox').split(' ')[2]);
   const titleFontSize = titleBgHeight / 4;
-  const headerGroup = svg.append('g').attr('id', 'header-group');
+  const navFontSize = titleFontSize / 2;
+  const navFontWidth = navFontSize - 5;
+  const descriptionFontSize = navFontSize;
+  const numChar = headingTextList.navList
+      .map(ele => ele.length)
+      .reduce((acc, curVal) => acc + curVal);
 
-  headerGroup.append('text')
-      .text(navList)
-      .attr('id', 'nav-list')
-      .attr('x', '50%')
-      .attr('y', titleBgHeight / 4)
-      .style('text-anchor', 'middle')
-      .style('font-size', titleFontSize / 2);
+  const headingPosition = {
+    navList: {
+      x: svgWidth / 2 - (numChar * navFontWidth / 2),
+      y: titleBgHeight / 4,
+    },
+    titleName: {
+      x: svgWidth / 2,
+      y: titleBgHeight * 3 / 4,
+    },
+    description: {
+      x: svgWidth / 2,
+      y: titleBgHeight,
+    },
+  };
 
-  headerGroup.append('text')
-      .text(titleName)
+  displayNavLink(headingGroup, headingPosition.navList, headingTextList.navList, navFontSize, navFontWidth);
+  displayTitleDescription(headingGroup, headingPosition, headingTextList.titleDescription, titleFontSize, descriptionFontSize);
+}
+
+/* Navigation in Heading */ 
+function displayNavLink(headingGroup, navPosition, navList, navFontSize, navFontWidth) {
+  const nav = headingGroup.append('g')
+      .attr('id', 'nav')
+      .attr('transform', `translate(${navPosition.x}, ${navPosition.y})`);
+
+  // Display nav item
+  let navX = 0;  
+  navList.forEach((navTextItem, i) => {
+    nav.append('text')
+        .text(navTextItem)
+        .attr('class', 'nav-list')
+        .attr('name', navTextItem)
+        .attr('letter-spacing', 1)
+        .attr('x', navX)
+        .style('text-anchor', 'left')
+        .style('font-size', navFontSize)
+        .style('fill', 'blue');
+
+    navX += navTextItem.length * navFontWidth;
+
+    if (i !== navList.length - 1) {
+      nav.append('text')
+          .text(' | ')
+          .attr('x', navX)
+          .style('font-size', navFontSize);
+      
+      navX += 3 * navFontWidth; 
+    }
+  });
+
+  // Handle nav item on click
+  d3.select('svg').selectAll('.nav-list')
+  .on('click', function(d) {
+    const navTextName = d3.select(this).attr('name');
+    const index = navList.indexOf(navTextName);
+    const titleDescription = d3.select('#heading-group').data()[0][index]
+    const newTitle = titleDescription.titleName;
+    const newDescription = titleDescription.description; 
+
+      d3.select('#title')
+          .text(d => newTitle)        
+
+      d3.select('#description')
+          .text(d => newDescription)
+  });
+}
+
+/* Title and description in heading */ 
+function displayTitleDescription(headingGroup, headingPosition, titleDescriptionText, titleFontSize, descriptionFontSize) {
+  const titleDescription = headingGroup.append('g')
+      .datum(titleDescriptionText);
+
+  titleDescription.append('g')
+      .append('text')
+      .text(d => d[0].titleName)
       .attr('id', 'title')
-      .attr('x', '50%')
-      .attr('y', titleBgHeight * 3 / 4)
+      .attr('transform', `translate(${headingPosition.titleName.x}, ${headingPosition.titleName.y})`)
       .style('text-anchor', 'middle')
       .style('font-weight', 'bold')
       .style('font-size', titleFontSize);
-      
-  headerGroup.append('text')
-      .text(description)
+
+  titleDescription.append('g')
+      .append('text')
+      .text(d => d[0].description)
       .attr('id', 'description')
-      .attr('x', '50%')
-      .attr('y', titleBgHeight)
+      .attr('transform', `translate(${headingPosition.description.x}, ${headingPosition.description.y})`)
       .style('text-anchor', 'middle')
-      .style('font-size', titleFontSize / 2);
+      .style('font-size', descriptionFontSize);
 }
+
 /* 
  * Data in JSON format can be pass directly to d3.hierarachy
  * Root node needed to compute hierarchial layout
