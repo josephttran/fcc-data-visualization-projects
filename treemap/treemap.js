@@ -30,11 +30,11 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
   // Container
   const treemap = d3.select('#treemap');
   /* Treemap heading
-   * headingTextList navList index relate to titleDescription index
+   * headingTextList navList index relate to titleDescriptionData index and treemapDataList index
    */
-  const headingTextList = {
+  const treemapDataSet = {
     navList: ['Video Game Data', 'Movies Data', 'Kickstarter Data'],
-    titleDescription: [
+    titleDescriptionData: [
       {
         titleName: 'Video Game Sales',
         description: 'Top 100 Sold Grouped by Platform',
@@ -47,6 +47,11 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
         titleName: 'Kickstarter Pledges',
         description: 'Top 100 Grouped by Category',
       }
+    ],
+    treemapDataList: [
+      videoGameData, 
+      moviesData,
+      pledgesData,
     ]
   };
   const titleBgHeight = 128;
@@ -78,18 +83,23 @@ function displayTreemap(pledgesData, moviesData, videoGameData) {
   // SVG
   const svg = treemap.append('svg')
       .attr('viewBox', `0 0 ${tileContainerWidth} ${tileContainerHeight + titleBgHeight + legendHeight}`);
-  const data = videoGameData;
 
-  displayHeading(svg, titleBgHeight, headingTextList);
-  displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, data, colorScale);
-  displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, data, colorScale);
+  displayHeading(svg, titleBgHeight, treemapDataSet);
+  displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, treemapDataSet.treemapDataList[0], colorScale);
+  displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, treemapDataSet.treemapDataList[0], colorScale);
   displayTooltip(svg, tooltip);
+  // Update on click
+  handleNavClick(treemapDataSet.navList, treemapDataSet.treemapDataList, colorScale,
+    tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, 
+    legendTranslate, legendPaddingTop, legendHeight, textLength,
+    tooltip
+  );
 }
 
 function displayHeading(svg, titleBgHeight, headingTextList) {
   const headingGroup = svg.append('g')
       .attr('id', 'heading-group')
-      .datum(headingTextList.titleDescription);
+      .datum(headingTextList.titleDescriptionData);
 
   const svgWidth = parseInt(d3.select('svg').attr('viewBox').split(' ')[2]);
   const titleFontSize = titleBgHeight / 4;
@@ -116,7 +126,7 @@ function displayHeading(svg, titleBgHeight, headingTextList) {
   };
 
   displayNavLink(headingGroup, headingPosition.navList, headingTextList.navList, navFontSize, navFontWidth);
-  displayTitleDescription(headingGroup, headingPosition, headingTextList.titleDescription, titleFontSize, descriptionFontSize);
+  displayTitleDescription(headingGroup, headingPosition, headingTextList.titleDescriptionData, titleFontSize, descriptionFontSize);
 }
 
 /* Navigation in Heading */ 
@@ -148,22 +158,6 @@ function displayNavLink(headingGroup, navPosition, navList, navFontSize, navFont
       
       navX += 3 * navFontWidth; 
     }
-  });
-
-  // Handle nav item on click
-  d3.select('svg').selectAll('.nav-list')
-  .on('click', function(d) {
-    const navTextName = d3.select(this).attr('name');
-    const index = navList.indexOf(navTextName);
-    const titleDescription = d3.select('#heading-group').data()[0][index]
-    const newTitle = titleDescription.titleName;
-    const newDescription = titleDescription.description; 
-
-      d3.select('#title')
-          .text(d => newTitle)        
-
-      d3.select('#description')
-          .text(d => newDescription)
   });
 }
 
@@ -208,8 +202,7 @@ function displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, ti
           .sum(d => d.value)
           .sort((a, b) => b.value - a.value)
       )
-      .leaves();
-
+      .leaves()
   const tiles = tileContainer.selectAll('g')
       .data(nodes)
       .enter()
@@ -255,6 +248,7 @@ function displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, ti
 
 function displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, data, colorScale) {
   const numberOfColors = data.children.length;
+  console.log(numberOfColors)
   const column = 3;
   const row = numberOfColors / column;
 
@@ -270,6 +264,9 @@ function displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, tex
   let index = 0;
   for (let i = 0; i < row; i++) {
     for (let j = 0; j < column; j++) {
+      if (index === numberOfColors) {
+        break;
+      }
       legend.append('rect')
           .attr('x', j * textLength)
           .attr('y', y)
@@ -282,9 +279,10 @@ function displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, tex
           .attr('dy', y + boxHeight)
           .text(data.children[index].name)
           .style('font-size', boxHeight);
-
+    
     index++;
     }
+
     y += boxHeight + boxMargin;
   }
 }
@@ -320,4 +318,39 @@ function displayTooltip(svg, tooltip) {
     .transition()
     .duration(200)
   });
+}
+
+/* Handle nav item on click */
+function handleNavClick(navList, treemapDataList, colorScale,
+                        tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, 
+                        legendTranslate, legendPaddingTop, legendHeight, textLength,
+                        tooltip) {
+  const svg = d3.select('svg');
+
+  svg.selectAll('.nav-list')
+    .on('click', function(d) {
+      const navTextName = d3.select(this).attr('name');
+      const index = navList.indexOf(navTextName);
+      const titleDescription = d3.select('#heading-group').data()[0][index]
+      const newTitle = titleDescription.titleName;
+      const newDescription = titleDescription.description; 
+      // Update title
+      d3.select('#title')
+      .text(d => newTitle);
+      
+      // Update description
+      d3.select('#description')
+      .text(d => newDescription);
+      
+      // Update treemap
+      d3.select('#tile-container').remove();
+      displayTreemapTiles(svg, tileContainerTranslate, tileContainerWidth, tileContainerHeight, fontSize, treemapDataList[index], colorScale);
+      
+      // Update Legend
+      d3.select('#legend').remove();
+      displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, textLength, treemapDataList[index], colorScale);
+      
+      // Update tooltip
+      displayTooltip(svg, tooltip);
+    });
 }
