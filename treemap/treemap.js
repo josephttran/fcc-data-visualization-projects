@@ -268,6 +268,7 @@ function displayLegend(svg, legendTranslate, legendPaddingTop, legendHeight, tex
         break;
       }
       legend.append('rect')
+          .attr('class', 'legend-item')
           .attr('x', j * textLength)
           .attr('y', y)
           .attr('width', boxWidth)
