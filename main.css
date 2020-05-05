@@ -1,0 +1,43 @@
+html, body, h1 {
+  margin: 0;
+  padding: 0;
+}
+
+.title {
+  height: 5vh;
+  padding: 1rem 0;
+  text-align: center;
+  border-bottom: 1px solid black;
+}
+
+.container {
+  height: 95vh;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.nav {
+  max-width: 200px;
+  background-color: gray;
+}
+
+.nav-item {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid black;
+  color: white;
+}
+
+.nav-item:hover {
+  color: black;
+}
+
+.active {
+  background-color: blue;
+}
+
+#visual {
+  flex-grow: 1;
+}

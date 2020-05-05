@@ -10,21 +10,6 @@
   }
 })()
 
-const months = {
-  1: 'January',
-  2: 'Febuary',
-  3: 'March',
-  4: 'April',
-  5: 'May',
-  6: 'June',
-  7: 'July',
-  8: 'August',
-  9: 'September',
-  10: 'October',
-  11: 'November',
-  12: 'December',
-};
-
 function displayHeatMap(data) {
   console.log(data);
   const heatMap = d3.select('#heat-map');
@@ -138,6 +123,21 @@ function displayAxis(svg, svgHeight, axis, axisPadding) {
 function displayCell(svg, data, axis, cell, colorScale, maxTemp) {
   const baseTemp = data['baseTemperature'];
 
+  const months = {
+    1: 'January',
+    2: 'Febuary',
+    3: 'March',
+    4: 'April',
+    5: 'May',
+    6: 'June',
+    7: 'July',
+    8: 'August',
+    9: 'September',
+    10: 'October',
+    11: 'November',
+    12: 'December',
+  };
+
   svg.selectAll('.cell')
       .data(data['monthlyVariance'])
       .enter()
@@ -157,6 +157,21 @@ function displayCell(svg, data, axis, cell, colorScale, maxTemp) {
 }
 
 function displayTooltip(svg, tooltip) {
+  const months = {
+    1: 'January',
+    2: 'Febuary',
+    3: 'March',
+    4: 'April',
+    5: 'May',
+    6: 'June',
+    7: 'July',
+    8: 'August',
+    9: 'September',
+    10: 'October',
+    11: 'November',
+    12: 'December',
+  };
+
   svg.selectAll('.cell')
       .on('mouseover', function(data) {
         const tooltipLeftMarginPadding = parseInt(tooltip.style('padding')) + parseInt(tooltip.style('margin'));
